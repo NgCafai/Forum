@@ -1,17 +1,22 @@
 package com.wujiahui.forum;
 
 import com.wujiahui.forum.dao.DiscussPostMapper;
+import com.wujiahui.forum.dao.LoginTicketMapper;
 import com.wujiahui.forum.dao.UserMapper;
 import com.wujiahui.forum.entity.DiscussPost;
+import com.wujiahui.forum.entity.LoginTicket;
 import com.wujiahui.forum.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by NgCafai on 2019/7/28 15:30.
@@ -25,6 +30,15 @@ public class MapperTests {
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
+
+    @Value("${forum.path.domain}")
+    private String domain;
+
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
 
     @Test
     public void testSelectUser() {
@@ -71,4 +85,36 @@ public class MapperTests {
         System.out.println(discussPostMapper.selectDiscussPostRows(0));
     }
 
+
+    @Test
+    public void testInsertLoginTicket() {
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(101);
+        loginTicket.setTicket("abc");
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
+
+        loginTicketMapper.insertLoginTicket(loginTicket);
+    }
+
+    @Test
+    public void testSelectLoginTicket() {
+        LoginTicket loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+
+        loginTicketMapper.updateStatus("abc", 1);
+        loginTicket = loginTicketMapper.selectByTicket("abc");
+        System.out.println(loginTicket);
+    }
+
+    @Test
+    public void setHeaders() {
+        List<User> users = userMapper.selectUsers();
+        for (User user : users) {
+            if (user.getId() <= 150) {
+                userMapper.updateHeader(user.getId(), String.format(domain + contextPath + "/img/%d.jpg", new Random().nextInt(30)));
+                userMapper.updateEmail(user.getId(), "null@sina.com");
+            }
+        }
+    }
 }
