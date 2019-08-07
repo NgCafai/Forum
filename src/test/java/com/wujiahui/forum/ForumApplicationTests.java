@@ -1,5 +1,6 @@
 package com.wujiahui.forum;
 
+import com.wujiahui.forum.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,9 +15,14 @@ public class ForumApplicationTests {
 
 	@Test
 	public void testGrammer() {
-		Map<String, Object> map = new HashMap<>();
-		System.out.println(map == null);
-		System.out.println(map.isEmpty());
+		User user = new User();
+		System.out.println(user.getId());
+		set(user);
+		System.out.println(user.getId());
+	}
+
+	public void set(User user) {
+		user.setId(100);
 	}
 
 }

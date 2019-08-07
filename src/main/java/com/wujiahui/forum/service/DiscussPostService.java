@@ -4,6 +4,7 @@ import com.wujiahui.forum.dao.DiscussPostMapper;
 import com.wujiahui.forum.entity.DiscussPost;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -22,5 +23,15 @@ public class DiscussPostService {
 
     public int findDiscussPostRows(int userId) {
         return discussPostMapper.selectDiscussPostRows(userId);
+    }
+
+    public int addDiscussPost(DiscussPost discussPost) {
+        if (discussPost == null) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+
+        discussPost.setTitle(HtmlUtils.htmlEscape(discussPost.getTitle()));
+        discussPost.setContent(HtmlUtils.htmlEscape(discussPost.getContent()));
+        return discussPostMapper.insertDiscussPost(discussPost);
     }
 }

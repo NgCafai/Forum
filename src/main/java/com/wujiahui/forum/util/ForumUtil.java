@@ -1,10 +1,12 @@
 package com.wujiahui.forum.util;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -36,5 +38,25 @@ public class ForumUtil {
             }
         }
         return null;
+    }
+
+    public static String getJSONString(int code, String msg, Map<String, Object> map) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", code);
+        jsonObject.put("msg", msg);
+        if (map != null) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                jsonObject.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return jsonObject.toJSONString();
+    }
+
+    public static String getJSONString(int code, String msg) {
+        return getJSONString(code, msg, null);
+    }
+
+    public static String getJSONString(int code) {
+        return getJSONString(code, null, null);
     }
 }
