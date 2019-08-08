@@ -34,4 +34,8 @@ public class DiscussPostService {
         discussPost.setContent(HtmlUtils.htmlEscape(discussPost.getContent()));
         return discussPostMapper.insertDiscussPost(discussPost);
     }
+
+    public DiscussPost findDiscussPostById(int id) {
+        return discussPostMapper.selectDiscussPostById(id);
+    }
 }
