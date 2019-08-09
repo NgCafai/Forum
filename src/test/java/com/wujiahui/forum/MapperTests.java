@@ -2,16 +2,17 @@ package com.wujiahui.forum;
 
 import com.wujiahui.forum.dao.DiscussPostMapper;
 import com.wujiahui.forum.dao.LoginTicketMapper;
+import com.wujiahui.forum.dao.MessageMapper;
 import com.wujiahui.forum.dao.UserMapper;
 import com.wujiahui.forum.entity.DiscussPost;
 import com.wujiahui.forum.entity.LoginTicket;
+import com.wujiahui.forum.entity.Message;
 import com.wujiahui.forum.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
@@ -34,11 +35,16 @@ public class MapperTests {
     @Autowired
     private LoginTicketMapper loginTicketMapper;
 
+    @Autowired
+    private MessageMapper messageMapper;
+
     @Value("${forum.path.domain}")
     private String domain;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+
 
     @Test
     public void testSelectUser() {
@@ -116,5 +122,28 @@ public class MapperTests {
                 userMapper.updateEmail(user.getId(), "null@sina.com");
             }
         }
+    }
+
+    @Test
+    public void testSelectLetters() {
+        List<Message> list = messageMapper.selectConversations(111, 0, 20);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+
+        int count = messageMapper.selectConversationCount(111);
+        System.out.println(count);
+
+        list = messageMapper.selectMessages("111_112", 0, 10);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+
+        count = messageMapper.selectMessageCount("111_112");
+        System.out.println(count);
+
+        count = messageMapper.selectUnreadMessageCount(131, "111_131");
+        System.out.println(count);
+
     }
 }
