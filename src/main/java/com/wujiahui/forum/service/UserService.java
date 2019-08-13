@@ -7,9 +7,11 @@ import com.wujiahui.forum.entity.User;
 import com.wujiahui.forum.util.ForumConstant;
 import com.wujiahui.forum.util.ForumUtil;
 import com.wujiahui.forum.util.MailClient;
+import com.wujiahui.forum.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -18,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by NgCafai on 2019/7/28 17:24.
@@ -42,8 +45,47 @@ public class UserService {
     @Autowired
     private LoginTicketMapper loginTicketMapper;
 
-    public User findUserById(int id) {
-        return userMapper.selectById(id);
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    /**
+     * 从 Redis 中取出缓存的用户对象
+     * 如果没有对应的缓存，返回 null
+     * @param userId
+     * @return
+     */
+    private User getCachedUser(int userId) {
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        return (User) redisTemplate.opsForValue().get(redisKey);
+    }
+
+    /**
+     * 将用户对象缓存到 Redis 中，并返回新缓存的对象，设置有效时间为 2 小时
+     * @param userId
+     * @return
+     */
+    private User initCache(int userId) {
+        User user = userMapper.selectById(userId);
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.opsForValue().set(redisKey, user, 2, TimeUnit.HOURS);
+        return user;
+    }
+
+    /**
+     * 用于在修改用户对象的内容时，删除 Redis 中的缓存
+     * @param userID
+     */
+    private void clearCache(int userID) {
+        String redisKey = RedisKeyUtil.getUserKey(userID);
+        redisTemplate.delete(redisKey);
+    }
+
+    public User findUserById(int userId) {
+        User user = getCachedUser(userId);
+        if (user == null) {
+            user = initCache(userId);
+        }
+        return user;
     }
 
     public User findUserByName(String username) {
@@ -114,6 +156,7 @@ public class UserService {
             int status = user.getStatus();
             if (status == 0 && user.getActivationCode().equals(activationCode)) {
                 userMapper.updateStatus(userId, 1);
+                clearCache(userId);
                 return ForumConstant.ACTIVATION_SUCCESS;
             } else if (status == 1) {
                 return ForumConstant.ACTIVATION_REPEAT;
@@ -160,22 +203,36 @@ public class UserService {
         loginTicket.setStatus(0);
         loginTicket.setTicket(ForumUtil.generateUUID());
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
-        loginTicketMapper.insertLoginTicket(loginTicket);
+//        loginTicketMapper.insertLoginTicket(loginTicket);
+
+        // 将 loginTicket 保存到 Redis 中
+        String redisKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
 
         map.put("ticket", loginTicket.getTicket());
         return map;
     }
 
     public void logout(String ticket) {
-        loginTicketMapper.updateStatus(ticket, 1);
+//        loginTicketMapper.updateStatus(ticket, 1);
+
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
+        loginTicket.setStatus(1);
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
     }
 
     public LoginTicket findLoginTicket(String ticket) {
-        return loginTicketMapper.selectByTicket(ticket);
+//        return loginTicketMapper.selectByTicket(ticket);
+
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
     }
 
     public int updateHeader(int userId, String headerUrl) {
-        return userMapper.updateHeader(userId, headerUrl);
+        int rows = userMapper.updateHeader(userId, headerUrl);
+        clearCache(userId);
+        return rows;
     }
 }
 

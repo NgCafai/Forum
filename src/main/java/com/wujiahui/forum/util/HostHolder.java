@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Contain a user object for each thread
+ *
  * Created by NgCafai on 2019/8/2 20:39.
  */
 @Component

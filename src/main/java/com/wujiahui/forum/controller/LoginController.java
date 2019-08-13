@@ -4,11 +4,16 @@ import com.google.code.kaptcha.Producer;
 import com.wujiahui.forum.entity.User;
 import com.wujiahui.forum.service.UserService;
 import com.wujiahui.forum.util.ForumConstant;
+import com.wujiahui.forum.util.ForumUtil;
+import com.wujiahui.forum.util.RedisKeyUtil;
+import io.lettuce.core.RedisURI;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -25,6 +30,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * deal with requests to register a new account or login
@@ -40,6 +46,9 @@ public class LoginController {
 
     @Autowired
     private Producer kaptchaProducer;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
@@ -115,7 +124,18 @@ public class LoginController {
         BufferedImage image = kaptchaProducer.createImage(text);
 
         // 将验证码文字内容存到 Session 中
-        session.setAttribute("kaptcha", text);
+//        session.setAttribute("kaptcha", text);
+
+        // 将验证码文字内容改存到 Redis 中
+        String kaptchaOwner = ForumUtil.generateUUID();
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey, text, 90, TimeUnit.SECONDS);
+
+        // 将当前验证码的标识 kaptchaOwner 作为 cookie 传给浏览器
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(90);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
 
         // 将图片传给浏览器
         response.setContentType("image/png");
@@ -129,14 +149,25 @@ public class LoginController {
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     public String login(String username, String password, String kaptcha, boolean rememberMe, Model model,
-                        HttpSession session, HttpServletResponse response) {
-        // 检查验证码
-        String correctKaptcha = (String) session.getAttribute("kaptcha");
-        if (!correctKaptcha.equalsIgnoreCase(kaptcha)) {
-            model.addAttribute("kaptchaMsg", "验证码不正确!");
+                        /*HttpSession session,*/ HttpServletResponse response,
+                        @CookieValue("kaptchaOwner") String kaptchaOwner) {
+
+//        String correctKaptcha = (String) session.getAttribute("kaptcha");
+        // 改为从 Redis 中取出正确的验证码
+        String correctKaptcha = null;
+        if (StringUtils.isNotBlank(kaptchaOwner)) {
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            correctKaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
+
+        // 检查用户输入的验证码是否正确
+        if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(correctKaptcha) ||
+                !kaptcha.equalsIgnoreCase(correctKaptcha)) {
+            model.addAttribute("codeMsg", "验证码不正确!");
             return "/site/login";
         }
 
+        // 检查账号,密码
         long expiredSeconds = rememberMe ? ForumConstant.REMEMBER_EXPIRED_SECONDS : ForumConstant.DEFAULT_EXPIRED_SECONDS;
         Map<String, Object> map = userService.login(username, password,expiredSeconds);
         if (map.containsKey("ticket")) {
