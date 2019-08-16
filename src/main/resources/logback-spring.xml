@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <contextName>community</contextName>
+    <property name="LOG_PATH" value="d:/IdeaProjects/forum_data"/>
+    <property name="APPDIR" value="forum_log"/>
+
+
+    <!--<property resource="logging-test.properties" />-->
+    <property name="STDOUT_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %easyHighlight(%5.5level) %magenta(%pid) --- [%15.15thread] %cyan(%-40.40logger{39} [%4.4line]) : %msg%n" />
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5.5level %pid --- [%15.15thread] %-40.40logger{40} [%4.4line] : %msg%n" />
+    <property name="LOGGINE_FILE_HOME" value="log" />
+
+
+    <!-- error file -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APPDIR}/error/log-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>5MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.wujiahui.forum.logging.EasyPatternLayout">
+                <pattern>
+                    ${logging.file.pattern:-${FILE_PATTERN}}
+                </pattern>
+            </layout>
+        </encoder>
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+            <!--<pattern>%d %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+            <!--<charset>utf-8</charset>-->
+        <!--</encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- warn file -->
+    <appender name="FILE_WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APPDIR}/log_warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APPDIR}/warn/log-warn-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>5MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.wujiahui.forum.logging.EasyPatternLayout">
+                <pattern>
+                    ${logging.file.pattern:-${FILE_PATTERN}}
+                </pattern>
+            </layout>
+        </encoder>
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+            <!--<pattern>%d %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+            <!--<charset>utf-8</charset>-->
+        <!--</encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- info file -->
+    <appender name="FILE_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APPDIR}/log_info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APPDIR}/info/log-info-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>5MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <append>true</append>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.wujiahui.forum.logging.EasyPatternLayout">
+                <pattern>
+                    ${logging.file.pattern:-${FILE_PATTERN}}
+                </pattern>
+            </layout>
+        </encoder>
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+            <!--<pattern>%d %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+            <!--<charset>utf-8</charset>-->
+        <!--</encoder>-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>info</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- console -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.wujiahui.forum.logging.EasyPatternLayout">
+                <pattern>
+                    ${logging.console.pattern:-${STDOUT_PATTERN}}
+                </pattern>
+                <!--<charset>utf-8</charset>-->
+            </layout>
+        </encoder>
+        <!--<encoder>-->
+            <!--<pattern>%d %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+            <!--<charset>utf-8</charset>-->
+        <!--</encoder>-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>debug</level>
+        </filter>
+    </appender>
+
+    <logger name="com.wujiahui.forum" level="debug"/>
+
+    <root level="info">
+        <appender-ref ref="FILE_ERROR"/>
+        <appender-ref ref="FILE_WARN"/>
+        <appender-ref ref="FILE_INFO"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
