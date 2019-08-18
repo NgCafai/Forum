@@ -45,4 +45,16 @@ public interface ForumConstant {
      * 实体类型: 用户
      */
     int ENTITY_TYPE_USER = 3;
+
+    /**
+     * Kafka 主题：评论
+     */
+    String TOPIC_COMMENT = "comment";
+
+    /**
+     * 系统用户的 id
+     */
+    int SYSTEM_USER_ID = 1;
+
+
 }

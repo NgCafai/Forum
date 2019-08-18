@@ -12,7 +12,7 @@
         user_id, entity_type, entity_id, target_id, content, status, create_time
     </sql>
 
-    <select id="selectCommentById">
+    <select id="selectCommentById" resultType="Comment">
         select <include refid="selectFields"></include>
         from comment
         where id = #{id}
@@ -27,7 +27,7 @@
         limit #{offset},#{limit}
     </select>
 
-    <select id="selectCountByEntity">
+    <select id="selectCountByEntity" resultType="int">
         select count(id)
         from comment
         where status = 0

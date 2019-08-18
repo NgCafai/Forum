@@ -10,9 +10,10 @@
 			<b th:utext="${email}">xxx@xxx.com</b>, 您好!
 		</p>
 		<p>
-			您正在注册 Forum 账号, 这是一封激活邮件, 请点击
-			<a th:href="${activationUrl}">此链接</a>,
+			您正在注册 Forum 账号, 这是一封激活邮件, 请点击此链接
+			<a th:href="${activationUrl}" th:text="${activationUrl}">此链接</a>,
 			激活您的 Forum 账号！
+			（如果访问失败，请尝试复制该地址到 Chrome 浏览器中打开）
 		</p>
 	</div>
 </body>
