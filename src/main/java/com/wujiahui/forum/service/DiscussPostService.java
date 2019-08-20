@@ -2,6 +2,8 @@ package com.wujiahui.forum.service;
 
 import com.wujiahui.forum.dao.DiscussPostMapper;
 import com.wujiahui.forum.entity.DiscussPost;
+import com.wujiahui.forum.entity.Event;
+import com.wujiahui.forum.util.ForumConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;

@@ -52,6 +52,12 @@ public interface ForumConstant {
     String TOPIC_COMMENT = "comment";
 
     /**
+     * Kafka 主题：发帖
+     * 用于帖子发送后，通过消息队列，将帖子加到 Elasticsearch 服务器中
+     */
+    String TOPIC_PUBLISH = "publish";
+
+    /**
      * 系统用户的 id
      */
     int SYSTEM_USER_ID = 1;

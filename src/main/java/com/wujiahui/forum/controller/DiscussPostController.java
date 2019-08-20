@@ -1,9 +1,7 @@
 package com.wujiahui.forum.controller;
 
-import com.wujiahui.forum.entity.Comment;
-import com.wujiahui.forum.entity.DiscussPost;
-import com.wujiahui.forum.entity.Page;
-import com.wujiahui.forum.entity.User;
+import com.wujiahui.forum.entity.*;
+import com.wujiahui.forum.event.EventProducer;
 import com.wujiahui.forum.service.CommentService;
 import com.wujiahui.forum.service.DiscussPostService;
 import com.wujiahui.forum.service.UserService;
@@ -40,6 +38,9 @@ public class DiscussPostController {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/post/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -58,6 +59,14 @@ public class DiscussPostController {
         discussPost.setContent(content);
         discussPost.setCreateTime(new Date());
         discussPostService.addDiscussPost(discussPost);
+
+        // 通过消息队列，将帖子加到 Elasticsearch 服务器中
+        Event event = new Event()
+                .setTopic(ForumConstant.TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ForumConstant.ENTITY_TYPE_POST)
+                .setEntityId(discussPost.getId());
+        eventProducer.fireEvent(event);
 
         return ForumUtil.getJSONString(0, "发布成功！");
     }

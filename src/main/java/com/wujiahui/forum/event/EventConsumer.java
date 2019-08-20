@@ -1,8 +1,11 @@
 package com.wujiahui.forum.event;
 
 import com.alibaba.fastjson.JSONObject;
+import com.wujiahui.forum.entity.DiscussPost;
 import com.wujiahui.forum.entity.Event;
 import com.wujiahui.forum.entity.Message;
+import com.wujiahui.forum.service.DiscussPostService;
+import com.wujiahui.forum.service.ElasticsearchService;
 import com.wujiahui.forum.service.MessageService;
 import com.wujiahui.forum.util.ForumConstant;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,6 +29,12 @@ public class EventConsumer {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private DiscussPostService discussPostService;
+
+    @Autowired
+    private ElasticsearchService elasticsearchService;
 
     @KafkaListener(topics = {ForumConstant.TOPIC_COMMENT})
     public void handleCommentMessage(ConsumerRecord record) {
@@ -62,6 +71,26 @@ public class EventConsumer {
 
         message.setContent(JSONObject.toJSONString(content));
         messageService.addMessage(message);
+    }
+
+    /**
+     * 消费发帖事件：将新发的帖子或者回帖加入到 Elasticsearch 中
+     */
+    @KafkaListener(topics = {ForumConstant.TOPIC_PUBLISH})
+    public void handlePublishPost(ConsumerRecord record) {
+        if (record == null || record.value() == null) {
+            logger.error("消息内容为空");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            logger.error("消息格式错误");
+            return;
+        }
+
+        DiscussPost discussPost = discussPostService.findDiscussPostById(event.getEntityId());
+        elasticsearchService.saveDiscussPost(discussPost);
     }
 
 }

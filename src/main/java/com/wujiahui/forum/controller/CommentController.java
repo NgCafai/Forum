@@ -88,6 +88,18 @@ public class CommentController {
                 eventProducer.fireEvent(event2);
             }
         }
+
+
+        // 触发发帖事件
+        if (comment.getEntityType() == ForumConstant.ENTITY_TYPE_POST) {
+            event = new Event()
+                    .setTopic(ForumConstant.TOPIC_PUBLISH)
+                    .setUserId(comment.getUserId())
+                    .setEntityType(ForumConstant.ENTITY_TYPE_POST)
+                    .setEntityId(discussPostId);
+            eventProducer.fireEvent(event);
+        }
+
         return "redirect:/post/detail/" + discussPostId;
     }
 }
