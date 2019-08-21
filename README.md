@@ -1,5 +1,8 @@
 # Forum
-A website for asking questions and getting answers. Version 2.0.0
+A website for asking questions and getting answers. 
+
+Version 2.0.0
+
 访问地址：http://www.wujiahui.net/forum
 
 ## 1、网站介绍
