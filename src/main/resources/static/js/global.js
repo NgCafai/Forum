@@ -1,3 +1,5 @@
+// 在开发时，设为 ""
+// 在部署时，设为 "/forum"。因为要打包到 forum.war,所以要加上这条路径
 var CONTEXT_PATH = "/forum";
 
 window.alert = function(message) {

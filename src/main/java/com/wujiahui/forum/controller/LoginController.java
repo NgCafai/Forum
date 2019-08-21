@@ -163,7 +163,7 @@ public class LoginController {
         // 检查用户输入的验证码是否正确
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(correctKaptcha) ||
                 !kaptcha.equalsIgnoreCase(correctKaptcha)) {
-            model.addAttribute("codeMsg", "验证码不正确!");
+            model.addAttribute("kaptchaMsg", "验证码不正确!");
             return "/site/login";
         }
 
