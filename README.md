@@ -1,5 +1,6 @@
 # Forum
 A website for asking questions and getting answers. Version 1.0.0
+访问地址：http://www.wujiahui.net/forum
 
 ## 1、网站介绍
 该网站实现了提问，评论，注册登录，未登录跳转，记住登录状态，私聊，搜索，系统通知等功能。
